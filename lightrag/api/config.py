@@ -89,6 +89,8 @@ def get_default_host(binding_type: str) -> str:
         # Let google-genai pick the correct default endpoint/version unless the
         # user explicitly overrides LLM_BINDING_HOST / EMBEDDING_BINDING_HOST.
         "gemini": os.getenv("LLM_BINDING_HOST", "DEFAULT_GEMINI_ENDPOINT"),
+        "local": "",
+        "fastembed": "",
     }
     return default_hosts.get(
         binding_type, os.getenv("LLM_BINDING_HOST", "http://localhost:11434")

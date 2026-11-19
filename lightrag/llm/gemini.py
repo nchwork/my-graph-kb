@@ -325,7 +325,7 @@ def _extract_response_text(
 
 
 @retry(
-    stop=stop_after_attempt(3),
+    stop=stop_after_attempt(10),
     wait=wait_exponential(multiplier=1, min=4, max=60),
     retry=(
         retry_if_exception_type(google_api_exceptions.InternalServerError)
@@ -747,7 +747,7 @@ async def gemini_model_complete(
     supports_asymmetric=True,
 )
 @retry(
-    stop=stop_after_attempt(3),
+    stop=stop_after_attempt(10),
     wait=wait_exponential(multiplier=1, min=4, max=60),
     retry=(
         retry_if_exception_type(google_api_exceptions.InternalServerError)

@@ -725,7 +725,11 @@ def create_optimized_embedding_function(
     provider_supports_asymmetric = False
 
     try:
-        if binding == "openai":
+        if binding in ("local", "fastembed"):
+            from lightrag.llm.local_embed import local_embed
+
+            provider_func = local_embed
+        elif binding == "openai":
             from lightrag.llm.openai import openai_embed
 
             provider_func = openai_embed

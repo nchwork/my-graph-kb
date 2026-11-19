@@ -7690,4 +7690,21 @@ def create_document_routes(
             logger.error(traceback.format_exc())
             raise internal_server_error(e)
 
+    @router.post(
+        "/export_obsidian",
+        dependencies=[Depends(combined_auth)],
+    )
+    async def export_document_to_obsidian_route(doc_id: str):
+        """
+        Export a document's bilingual summary note directly to the Obsidian Vault.
+        """
+        try:
+            from lightrag.tools.obsidian_exporter import export_document_by_id
+            loop = asyncio.get_running_loop()
+            res = await loop.run_in_executor(None, export_document_by_id, doc_id, rag.working_dir)
+            return res
+        except Exception as e:
+            logger.error(f"Error exporting to Obsidian: {str(e)}")
+            raise internal_server_error(e)
+
     return router

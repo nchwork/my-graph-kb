@@ -5890,6 +5890,13 @@ class _PipelineMixin:
                         metadata_drop=(KG_PURGE_METADATA_KEY,),
                     )
 
+                    # Auto-export Obsidian bilingual summary note
+                    try:
+                        from lightrag.tools.obsidian_exporter import export_document_by_id
+                        asyncio.get_running_loop().run_in_executor(None, export_document_by_id, doc_id)
+                    except Exception as export_err:
+                        logger.warning("Obsidian auto-export hook failed: %s", export_err)
+
                     async with ctx.pipeline_status_lock:
                         log_message = (
                             f"Completed processing file "

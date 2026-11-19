@@ -35,14 +35,15 @@ import {
   DocStatusResponse,
   DocumentsRequest,
   PaginatedDocsResponse,
-  PaginationInfo
+  PaginationInfo,
+  exportToObsidian
 } from '@/api/lightrag'
 import { errorMessage } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useBackendState } from '@/stores/state'
 import { copyToClipboard } from '@/utils/clipboard'
 
-import { RefreshCwIcon, ActivityIcon, ArrowUpIcon, ArrowDownIcon, RotateCcwIcon, CheckSquareIcon, XIcon, AlertTriangle, Info, CopyIcon } from 'lucide-react'
+import { RefreshCwIcon, ActivityIcon, ArrowUpIcon, ArrowDownIcon, RotateCcwIcon, CheckSquareIcon, XIcon, AlertTriangle, Info, CopyIcon, BookOpen } from 'lucide-react'
 import PipelineStatusDialog from '@/components/documents/PipelineStatusDialog'
 import {
   getStatusRequestFilters,
@@ -455,6 +456,22 @@ export default function DocumentManager() {
   // State for document selection
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([])
   const isSelectionMode = selectedDocIds.length > 0
+  const [exportingDocId, setExportingDocId] = useState<string | null>(null)
+
+  const handleExportObsidian = async (docId: string) => {
+    try {
+      setExportingDocId(docId)
+      toast.info('Đang sinh bản tóm tắt Song ngữ (Anh - Việt) cho Obsidian...')
+      const res = await exportToObsidian(docId)
+      toast.success(`Đã xuất vào Obsidian Vault thành công! Tệp: ${res.filename}`, {
+        duration: 8000,
+      })
+    } catch (err) {
+      toast.error(`Xuất Obsidian thất bại: ${errorMessage(err)}`)
+    } finally {
+      setExportingDocId(null)
+    }
+  }
 
   // Add refs to track previous pipelineActive state and current interval
   const prevPipelineActiveRef = useRef<boolean | undefined>(undefined);
@@ -1539,6 +1556,20 @@ export default function DocumentManager() {
                 onDocumentsDeleted={handleDocumentsDeleted}
               />
             )}
+            {isSelectionMode && selectedDocIds.length === 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExportObsidian(selectedDocIds[0])}
+                disabled={exportingDocId === selectedDocIds[0]}
+                className="text-purple-600 border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950"
+                tooltip="Xuất bản tóm tắt Song ngữ (Anh - Việt) sang Obsidian Vault"
+                side="bottom"
+              >
+                <BookOpen className={cn("h-4 w-4 mr-1", exportingDocId === selectedDocIds[0] && "animate-spin")} />
+                Xuất cho Obsidian
+              </Button>
+            )}
             {isSelectionMode && hasCurrentPageSelection ? (
               (() => {
                 const buttonProps = getSelectionButtonProps();
@@ -1841,6 +1872,20 @@ export default function DocumentManager() {
                                 })()}
 
                                 {hasDocumentDetails(doc) && <DocumentStatusDetailsDialog doc={doc} />}
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6 ml-1 text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950"
+                                      disabled={exportingDocId === doc.id}
+                                      onClick={() => handleExportObsidian(doc.id)}
+                                    >
+                                      <BookOpen className={cn("h-3.5 w-3.5", exportingDocId === doc.id && "animate-spin")} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Xuất tóm tắt Song ngữ cho Obsidian Brain</TooltipContent>
+                                </Tooltip>
                               </div>
                             </TableCell>
                             <TableCell>{doc.content_length ?? '-'}</TableCell>

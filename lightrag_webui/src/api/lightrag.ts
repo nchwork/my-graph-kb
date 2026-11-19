@@ -1145,6 +1145,19 @@ export const cancelPipeline = async (): Promise<{
   return response.data
 }
 
+export const exportToObsidian = async (docId: string): Promise<{
+  status: string
+  title: string
+  vault_path: string
+  local_path: string
+  filename: string
+}> => {
+  const response = await axiosInstance.post('/documents/export_obsidian', null, {
+    params: { doc_id: docId }
+  })
+  return response.data
+}
+
 export const loginToServer = async (username: string, password: string): Promise<LoginResponse> => {
   const formData = new URLSearchParams();
   formData.append('username', username);
